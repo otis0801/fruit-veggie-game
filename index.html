@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>水果蔬菜分類大挑戰</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .level-info {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .level-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .level-mode {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .score-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* 拖曳模式樣式 */
+        .drag-mode {
+            display: none;
+        }
+
+        .baskets {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .basket {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border: 3px dashed #ccc;
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 200px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .basket.fruit-basket {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+
+        .basket.vegetable-basket {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .basket.drag-over {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            transform: scale(1.05);
+        }
+
+        .basket-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .basket-emoji {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .items-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .draggable-item {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            padding: 15px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .draggable-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .draggable-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .item-emoji {
+            font-size: 2.5em;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .item-name {
+            font-size: 1em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* 點選模式樣式 */
+        .click-mode {
+            display: none;
+        }
+
+        .current-item {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .current-item .item-emoji {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .current-item .item-name {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .question {
+            font-size: 1.3em;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            min-width: 120px;
+        }
+
+        .btn-fruit {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+
+        .btn-fruit:hover {
+            background: linear-gradient(135deg, #ee5a24, #d63031);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(238, 90, 36, 0.3);
+        }
+
+        .btn-vegetable {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+        }
+
+        .btn-vegetable:hover {
+            background: linear-gradient(135deg, #00a085, #00896b);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 184, 148, 0.3);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn-next:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feedback.show {
+            opacity: 1;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .level-complete {
+            display: none;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .game-complete {
+            display: none;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .game-complete h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .baskets {
+                flex-direction: column;
+            }
+            
+            .items-container {
+                gap: 10px;
+            }
+            
+            .draggable-item {
+                min-width: 80px;
+                padding: 10px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🍎🥕 水果蔬菜分類大挑戰</h1>
+        <p class="subtitle">10個關卡等你來挑戰！</p>
+        
+        <div class="level-info">
+            <div class="level-title" id="level-title">第1關</div>
+            <div class="level-mode" id="level-mode">🖱️ 拖曳模式</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div id="progress-text">關卡進度：0/10</div>
+        </div>
+
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-number" id="level-score">0</div>
+                <div class="score-label">本關分數</div>
+            </div>
+            <div class="score-item">
+                <div class="score-number" id="total-score">0</div>
+                <div class="score-label">總分</div>
+            </div>
+            <div class="score-item">
+                <div class="score-number" id="current-level">1</div>
+                <div class="score-label">目前關卡</div>
+            </div>
+        </div>
+
+        <!-- 拖曳模式 -->
+        <div class="drag-mode" id="drag-mode">
+            <div class="baskets">
+                <div class="basket fruit-basket" id="fruit-basket">
+                    <div class="basket-emoji">🍎</div>
+                    <div class="basket-title">水果籃</div>
+                </div>
+                <div class="basket vegetable-basket" id="vegetable-basket">
+                    <div class="basket-emoji">🥕</div>
+                    <div class="basket-title">蔬菜籃</div>
+                </div>
+            </div>
+            <div class="items-container" id="items-container"></div>
+        </div>
+
+        <!-- 點選模式 -->
+        <div class="click-mode" id="click-mode">
+            <div class="current-item">
+                <span class="item-emoji" id="current-emoji">🍎</span>
+                <div class="item-name" id="current-name">蘋果</div>
+                <div class="question">這是水果還是蔬菜？</div>
+                <div class="buttons">
+                    <button class="btn btn-fruit" onclick="checkAnswer('fruit')">🍎 水果</button>
+                    <button class="btn btn-vegetable" onclick="checkAnswer('vegetable')">🥕 蔬菜</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <!-- 關卡完成 -->
+        <div class="level-complete" id="level-complete">
+            <h3>🎉 關卡完成！</h3>
+            <div id="level-result"></div>
+            <button class="btn-next" onclick="nextLevel()">下一關 ➡️</button>
+        </div>
+
+        <!-- 遊戲完成 -->
+        <div class="game-complete" id="game-complete">
+            <h2>🏆 恭喜完成所有關卡！</h2>
+            <div id="final-result"></div>
+            <button class="btn-next" onclick="restartGame()">🔄 重新挑戰</button>
+        </div>
+    </div>
+
+    <script>
+        // 精選50個台灣常見水果蔬菜
+        const allItems = [
+            // 水果 (25個)
+            { emoji: '🍎', name: '蘋果', type: 'fruit' },
+            { emoji: '🍌', name: '香蕉', type: 'fruit' },
+            { emoji: '🍊', name: '橘子', type: 'fruit' },
+            { emoji: '🍇', name: '葡萄', type: 'fruit' },
+            { emoji: '🍓', name: '草莓', type: 'fruit' },
+            { emoji: '🥝', name: '奇異果', type: 'fruit' },
+            { emoji: '🍒', name: '櫻桃', type: 'fruit' },
+            { emoji: '🥭', name: '芒果', type: 'fruit' },
+            { emoji: '🍍', name: '鳳梨', type: 'fruit' },
+            { emoji: '🥥', name: '椰子', type: 'fruit' },
+            { emoji: '🍈', name: '哈密瓜', type: 'fruit' },
+            { emoji: '🍉', name: '西瓜', type: 'fruit' },
+            { emoji: '🍋', name: '檸檬', type: 'fruit' },
+            { emoji: '🍑', name: '桃子', type: 'fruit' },
+            { emoji: '🍐', name: '水梨', type: 'fruit' },
+            { emoji: '🫐', name: '藍莓', type: 'fruit' },
+            { emoji: '🍅', name: '番茄', type: 'fruit' },
+            { emoji: '🥑', name: '酪梨', type: 'fruit' },
+            { emoji: '🍯', name: '蜂蜜', type: 'fruit' },
+            { emoji: '🥭', name: '木瓜', type: 'fruit' },
+            { emoji: '🍇', name: '龍眼', type: 'fruit' },
+            { emoji: '🍒', name: '荔枝', type: 'fruit' },
+            { emoji: '🥝', name: '百香果', type: 'fruit' },
+            { emoji: '🍊', name: '柚子', type: 'fruit' },
+            { emoji: '🍋', name: '萊姆', type: 'fruit' },
+
+            // 蔬菜 (25個)
+            { emoji: '🥕', name: '胡蘿蔔', type: 'vegetable' },
+            { emoji: '🥬', name: '高麗菜', type: 'vegetable' },
+            { emoji: '🥒', name: '小黃瓜', type: 'vegetable' },
+            { emoji: '🥔', name: '馬鈴薯', type: 'vegetable' },
+            { emoji: '🧅', name: '洋蔥', type: 'vegetable' },
+            { emoji: '🌽', name: '玉米', type: 'vegetable' },
+            { emoji: '🥦', name: '花椰菜', type: 'vegetable' },
+            { emoji: '🍆', name: '茄子', type: 'vegetable' },
+            { emoji: '🌶️', name: '辣椒', type: 'vegetable' },
+            { emoji: '🫑', name: '青椒', type: 'vegetable' },
+            { emoji: '🧄', name: '大蒜', type: 'vegetable' },
+            { emoji: '🥬', name: '菠菜', type: 'vegetable' },
+            { emoji: '🥒', name: '絲瓜', type: 'vegetable' },
+            { emoji: '🥔', name: '地瓜', type: 'vegetable' },
+            { emoji: '🧅', name: '韭菜', type: 'vegetable' },
+            { emoji: '🌽', name: '筊白筍', type: 'vegetable' },
+            { emoji: '🥦', name: '青花菜', type: 'vegetable' },
+            { emoji: '🍆', name: '苦瓜', type: 'vegetable' },
+            { emoji: '🌶️', name: '四季豆', type: 'vegetable' },
+            { emoji: '🫑', name: '甜椒', type: 'vegetable' },
+            { emoji: '🧄', name: '薑', type: 'vegetable' },
+            { emoji: '🥬', name: '白菜', type: 'vegetable' },
+            { emoji: '🥒', name: '冬瓜', type: 'vegetable' },
+            { emoji: '🥔', name: '蘿蔔', type: 'vegetable' },
+            { emoji: '🧅', name: '蔥', type: 'vegetable' }
+        ];
+
+        let currentLevel = 1;
+        let levelScore = 0;
+        let totalScore = 0;
+        let currentLevelItems = [];
+        let currentItemIndex = 0;
+        let levelProgress = 0;
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function startLevel() {
+            levelScore = 0;
+            levelProgress = 0;
+            currentItemIndex = 0;
+            
+            // 每關10個項目
+            const shuffledItems = shuffleArray(allItems);
+            currentLevelItems = shuffledItems.slice(0, 10);
+            
+            updateUI();
+            
+            if (currentLevel % 2 === 1) {
+                // 單數關：拖曳模式
+                startDragMode();
+            } else {
+                // 偶數關：點選模式
+                startClickMode();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('level-title').textContent = `第${currentLevel}關`;
+            document.getElementById('level-mode').textContent = 
+                currentLevel % 2 === 1 ? '🖱️ 拖曳模式' : '👆 點選模式';
+            document.getElementById('level-score').textContent = levelScore;
+            document.getElementById('total-score').textContent = totalScore;
+            document.getElementById('current-level').textContent = currentLevel;
+            document.getElementById('progress-text').textContent = `關卡進度：${levelProgress}/10`;
+            
+            const progressPercent = (levelProgress / 10) * 100;
+            document.getElementById('progress-fill').style.width = progressPercent + '%';
+        }
+
+        function startDragMode() {
+            document.getElementById('drag-mode').style.display = 'block';
+            document.getElementById('click-mode').style.display = 'none';
+            document.getElementById('level-complete').style.display = 'none';
+            
+            const container = document.getElementById('items-container');
+            container.innerHTML = '';
+            
+            currentLevelItems.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'draggable-item';
+                itemDiv.draggable = true;
+                itemDiv.dataset.type = item.type;
+                itemDiv.dataset.index = index;
+                
+                itemDiv.innerHTML = `
+                    <span class="item-emoji">${item.emoji}</span>
+                    <div class="item-name">${item.name}</div>
+                `;
+                
+                itemDiv.addEventListener('dragstart', handleDragStart);
+                itemDiv.addEventListener('dragend', handleDragEnd);
+                
+                container.appendChild(itemDiv);
+            });
+            
+            setupBaskets();
+        }
+
+        function setupBaskets() {
+            const fruitBasket = document.getElementById('fruit-basket');
+            const vegetableBasket = document.getElementById('vegetable-basket');
+            
+            [fruitBasket, vegetableBasket].forEach(basket => {
+                basket.addEventListener('dragover', handleDragOver);
+                basket.addEventListener('drop', handleDrop);
+                basket.addEventListener('dragenter', handleDragEnter);
+                basket.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+
+        function handleDragStart(e) {
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', e.target.dataset.index);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.target.closest('.basket').classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            if (!e.target.closest('.basket').contains(e.relatedTarget)) {
+                e.target.closest('.basket').classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const basket = e.target.closest('.basket');
+            basket.classList.remove('drag-over');
+            
+            const itemIndex = e.dataTransfer.getData('text/plain');
+            const item = currentLevelItems[itemIndex];
+            const basketType = basket.classList.contains('fruit-basket') ? 'fruit' : 'vegetable';
+            
+            const isCorrect = item.type === basketType;
+            
+            if (isCorrect) {
+                levelScore += 10;
+                showFeedback('🎉 答對了！', 'correct');
+            } else {
+                const correctType = item.type === 'fruit' ? '水果' : '蔬菜';
+                showFeedback(`❌ 答錯了！${item.name}是${correctType}`, 'incorrect');
+            }
+            
+            // 移除已拖曳的項目
+            const draggedElement = document.querySelector(`[data-index="${itemIndex}"]`);
+            draggedElement.remove();
+            
+            levelProgress++;
+            updateUI();
+            
+            if (levelProgress >= 10) {
+                setTimeout(completeLevelDrag, 1000);
+            }
+        }
+
+        function startClickMode() {
+            document.getElementById('drag-mode').style.display = 'none';
+            document.getElementById('click-mode').style.display = 'block';
+            document.getElementById('level-complete').style.display = 'none';
+            
+            showCurrentItem();
+        }
+
+        function showCurrentItem() {
+            if (currentItemIndex >= currentLevelItems.length) {
+                completeLevelClick();
+                return;
+            }
+            
+            const item = currentLevelItems[currentItemIndex];
+            document.getElementById('current-emoji').textContent = item.emoji;
+            document.getElementById('current-name').textContent = item.name;
+            
+            // 清除反饋
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('show', 'correct', 'incorrect');
+        }
+
+        function checkAnswer(selectedType) {
+            const item = currentLevelItems[currentItemIndex];
+            const isCorrect = selectedType === item.type;
+            
+            if (isCorrect) {
+                levelScore += 10;
+                showFeedback('🎉 答對了！', 'correct');
+            } else {
+                const correctType = item.type === 'fruit' ? '水果' : '蔬菜';
+                showFeedback(`❌ 答錯了！${item.name}是${correctType}`, 'incorrect');
+            }
+            
+            currentItemIndex++;
+            levelProgress++;
+            updateUI();
+            
+            setTimeout(() => {
+                if (currentItemIndex >= currentLevelItems.length) {
+                    completeLevelClick();
+                } else {
+                    showCurrentItem();
+                }
+            }, 1500);
+        }
+
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.classList.remove('correct', 'incorrect');
+            feedback.classList.add(type, 'show');
+        }
+
+        function completeLevelDrag() {
+            document.getElementById('drag-mode').style.display = 'none';
+            showLevelComplete();
+        }
+
+        function completeLevelClick() {
+            document.getElementById('click-mode').style.display = 'none';
+            showLevelComplete();
+        }
+
+        function showLevelComplete() {
+            totalScore += levelScore;
+            
+            document.getElementById('level-complete').style.display = 'block';
+            document.getElementById('level-result').innerHTML = 
+                `本關得分：${levelScore}/100分<br>累積總分：${totalScore}分`;
+            
+            updateUI();
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            
+            if (currentLevel > 10) {
+                showGameComplete();
+                return;
+            }
+            
+            document.getElementById('level-complete').style.display = 'none';
+            startLevel();
+        }
+
+        function showGameComplete() {
+            document.getElementById('level-complete').style.display = 'none';
+            document.getElementById('game-complete').style.display = 'block';
+            
+            let grade = '';
+            if (totalScore >= 900) grade = '🏆 完美大師！';
+            else if (totalScore >= 800) grade = '🥇 優秀！';
+            else if (totalScore >= 700) grade = '🥈 很棒！';
+            else if (totalScore >= 600) grade = '🥉 不錯！';
+            else grade = '💪 繼續加油！';
+            
+            document.getElementById('final-result').innerHTML = 
+                `${grade}<br><br>最終總分：${totalScore}/1000分<br>平均每關：${Math.round(totalScore/10)}分`;
+        }
+
+        function restartGame() {
+            currentLevel = 1;
+            levelScore = 0;
+            totalScore = 0;
+            levelProgress = 0;
+            currentItemIndex = 0;
+            
+            document.getElementById('game-complete').style.display = 'none';
+            startLevel();
+        }
+
+        // 初始化遊戲
+        startLevel();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97293b6d706e4aa4',t:'MTc1NTc2OTg4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
