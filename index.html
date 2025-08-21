@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>水果蔬菜分類大冒險</title>
+    
+    <!-- PWA 設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="水果蔬菜分類">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDAiIGZpbGw9IiNGRjZEMDAiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+Cjx0ZXh0IHg9IjEyIiB5PSIxNiIgZm9udC1zaXplPSIxNiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiPvCfjY08L3RleHQ+Cjwvc3ZnPgo8L3N2Zz4KPC9zdmc+">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuawtOaenOiUlOiPnOWIhuexu+mBiumMryIsCiAgInNob3J0X25hbWUiOiAi5YiG6aGe6YGK5oivIiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjRkZGRkZGIiwKICAidGhlbWVfY29sb3IiOiAiI0ZGNkQwMCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjNhV1IwYUQwaU1Ua3lJaUJvWldsbmFIUTlJakU1TWlJZ2RtbGxkMEp2ZUQwaU1DQXdJREU1TWlBeE9USWlJR1pwYkd3OUltNXZibVVpSUhodGJHNXpQU0pvZEhSd09pOHZkM2QzTG5jekxtOXlaeTh5TURBd0wzTjJaeUkrQ2p4eVpXTjBJSGRwWkhSb1BTSXhPVElpSUdobGFXZG9kRDBpTVRreUlpQnllRDBpTkRBaUlHWnBiR3c5SWlOR1JqWkVNREFpTHo0S1BITjJaeUI0UFNJME9DSWdlVDBpTkRnaUlIZHBaSFJvUFNJNU5pSWdhR1ZwWjJoMFBTSTVOaUlnZG1sbGQwSnZlRDBpTUNBd0lESTBJREkwSWlCbWFXeHNQU0p1YjI1bElqNEtQSE4yWnlCM2FXUjBhRDBpT1RZaUlHaGxhV2RvZEQwaU9UWWlJSFpwWlhkQ2IzZzlJakFnTUNBeU5DQXlOQ0lnWm1sc2JEMGlibTl1WlNJK0NqeDBaWGgwSUhnOUlqRXlJaUI1UFNJeE5pSWdabTl1ZEMxemFYcGxQU0l4TmlJZ2RHVjRkQzFoYm1Ob2IzSTlJbTFwWkdSc1pTSWdabWxzYkQwaWQyaHBkR1VpUGZ3bmFZMk5QQzkwWlhoMFBnbzhMM04yWno0S1BDOXpkbWMrQ2p3dmMzWm5QZ289IiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        
+        .drag-item {
+            transition: transform 0.2s ease;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+        }
+        
+        .drag-item:hover, .drag-item:active {
+            transform: scale(1.1);
+        }
+        
+        .drag-item.dragging {
+            transform: rotate(5deg) scale(1.1);
+            z-index: 1000;
+            opacity: 0.8;
+        }
+        
+        /* 手機觸控優化 */
+        @media (max-width: 768px) {
+            .drag-item {
+                padding: 16px !important;
+                font-size: 1.2rem;
+            }
+            
+            .drop-zone {
+                min-height: 120px;
+            }
+        }
+        
+        .drop-zone {
+            transition: all 0.3s ease;
+        }
+        
+        .drop-zone.drag-over {
+            background-color: #fef3c7;
+            border-color: #f59e0b;
+            transform: scale(1.02);
+        }
+        
+        .correct-drop {
+            animation: bounce 0.6s ease;
+        }
+        
+        .wrong-drop {
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .level-complete {
+            animation: levelUp 1s ease;
+        }
+        
+        @keyframes levelUp {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2) rotate(5deg); }
+            100% { transform: scale(1); }
+        }
+        
+        .star {
+            animation: twinkle 1s ease infinite alternate;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.5; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 min-h-screen">
+    <div class="container mx-auto px-4 py-6">
+        <!-- 標題和關卡資訊 -->
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-purple-800 mb-2">🍎 水果蔬菜分類大冒險 🥕</h1>
+            <div class="flex justify-center items-center gap-4 mb-4">
+                <div class="bg-white rounded-full px-4 py-2 shadow-lg">
+                    <span class="text-lg font-bold text-blue-600">關卡 <span id="current-level">1</span></span>
+                </div>
+                <div class="bg-white rounded-full px-4 py-2 shadow-lg">
+                    <span class="text-lg font-bold text-green-600">得分: <span id="score">0</span></span>
+                </div>
+                <div class="bg-white rounded-full px-4 py-2 shadow-lg">
+                    <span class="text-lg font-bold text-orange-600">完成: <span id="completed">0</span>/<span id="total">6</span></span>
+                </div>
+            </div>
+            <div id="level-description" class="text-lg text-purple-600 font-semibold"></div>
+        </div>
+
+        <!-- 關卡進度條 -->
+        <div class="mb-6">
+            <div class="bg-white rounded-full p-2 shadow-lg">
+                <div class="bg-gray-200 rounded-full h-4 relative overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-green-400 to-blue-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 遊戲區域 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 待分類物品 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl p-6 shadow-xl">
+                    <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">🛒 待分類</h2>
+                    <div id="items-container" class="grid grid-cols-2 gap-3">
+                        <!-- 物品會動態生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分類籃子 -->
+            <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 水果籃 -->
+                <div class="drop-zone bg-gradient-to-br from-red-100 to-orange-100 rounded-2xl p-6 border-4 border-dashed border-red-300 shadow-xl" 
+                     data-category="fruit">
+                    <div class="text-center mb-4">
+                        <h2 class="text-2xl font-bold text-red-600">🍎 水果籃</h2>
+                        <p class="text-sm text-red-500">把水果拖到這裡</p>
+                    </div>
+                    <div id="fruit-basket" class="grid grid-cols-4 gap-2 min-h-24">
+                        <!-- 已分類的水果會出現在這裡 -->
+                    </div>
+                </div>
+
+                <!-- 蔬菜籃 -->
+                <div class="drop-zone bg-gradient-to-br from-green-100 to-lime-100 rounded-2xl p-6 border-4 border-dashed border-green-300 shadow-xl" 
+                     data-category="vegetable">
+                    <div class="text-center mb-4">
+                        <h2 class="text-2xl font-bold text-green-600">🥕 蔬菜籃</h2>
+                        <p class="text-sm text-green-500">把蔬菜拖到這裡</p>
+                    </div>
+                    <div id="vegetable-basket" class="grid grid-cols-4 gap-2 min-h-24">
+                        <!-- 已分類的蔬菜會出現在這裡 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 控制按鈕 -->
+        <div class="text-center mt-6 space-x-4">
+            <button id="hint-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transform hover:scale-105 transition-all">
+                💡 提示
+            </button>
+            <button id="restart-level-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transform hover:scale-105 transition-all">
+                🔄 重新開始關卡
+            </button>
+        </div>
+
+        <!-- 關卡完成畫面 -->
+        <div id="level-complete" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-3xl p-8 text-center shadow-2xl max-w-md">
+                <div class="text-6xl mb-4">🎉</div>
+                <h2 class="text-3xl font-bold text-purple-600 mb-2">關卡完成！</h2>
+                <div id="stars-display" class="flex justify-center mb-4">
+                    <!-- 星星會動態生成 -->
+                </div>
+                <p id="level-complete-message" class="text-lg text-gray-600 mb-6"></p>
+                <div class="space-x-4">
+                    <button id="next-level-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full">
+                        下一關 ➡️
+                    </button>
+                    <button id="replay-level-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full">
+                        重玩本關
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 遊戲完成畫面 -->
+        <div id="game-complete" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-3xl p-8 text-center shadow-2xl max-w-md">
+                <div class="text-6xl mb-4">👑</div>
+                <h2 class="text-3xl font-bold text-gold-600 mb-4">恭喜通關！</h2>
+                <p class="text-lg text-gray-600 mb-6">你已經成為水果蔬菜分類大師了！</p>
+                <button id="restart-game-btn" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-full">
+                    重新挑戰
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 關卡設計 - 從簡單到困難
+        const levels = [
+            {
+                level: 1,
+                name: "新手村",
+                description: "認識基本的水果和蔬菜",
+                items: [
+                    { id: 1, name: '蘋果', emoji: '🍎', category: 'fruit' },
+                    { id: 2, name: '香蕉', emoji: '🍌', category: 'fruit' },
+                    { id: 3, name: '橘子', emoji: '🍊', category: 'fruit' },
+                    { id: 7, name: '紅蘿蔔', emoji: '🥕', category: 'vegetable' },
+                    { id: 8, name: '青椒', emoji: '🫑', category: 'vegetable' },
+                    { id: 9, name: '番茄', emoji: '🍅', category: 'vegetable' }
+                ]
+            },
+            {
+                level: 2,
+                name: "進階挑戰",
+                description: "更多種類的水果蔬菜",
+                items: [
+                    { id: 4, name: '草莓', emoji: '🍓', category: 'fruit' },
+                    { id: 5, name: '葡萄', emoji: '🍇', category: 'fruit' },
+                    { id: 6, name: '西瓜', emoji: '🍉', category: 'fruit' },
+                    { id: 13, name: '櫻桃', emoji: '🍒', category: 'fruit' },
+                    { id: 10, name: '玉米', emoji: '🌽', category: 'vegetable' },
+                    { id: 11, name: '茄子', emoji: '🍆', category: 'vegetable' },
+                    { id: 12, name: '花椰菜', emoji: '🥦', category: 'vegetable' },
+                    { id: 14, name: '洋蔥', emoji: '🧅', category: 'vegetable' }
+                ]
+            },
+            {
+                level: 3,
+                name: "熱帶水果",
+                description: "認識熱帶和特殊水果",
+                items: [
+                    { id: 15, name: '鳳梨', emoji: '🍍', category: 'fruit' },
+                    { id: 16, name: '芒果', emoji: '🥭', category: 'fruit' },
+                    { id: 17, name: '椰子', emoji: '🥥', category: 'fruit' },
+                    { id: 18, name: '奇異果', emoji: '🥝', category: 'fruit' },
+                    { id: 19, name: '酪梨', emoji: '🥑', category: 'fruit' },
+                    { id: 20, name: '馬鈴薯', emoji: '🥔', category: 'vegetable' },
+                    { id: 21, name: '蘑菇', emoji: '🍄', category: 'vegetable' },
+                    { id: 22, name: '大蒜', emoji: '🧄', category: 'vegetable' },
+                    { id: 23, name: '小黃瓜', emoji: '🥒', category: 'vegetable' },
+                    { id: 24, name: '萵苣', emoji: '🥬', category: 'vegetable' }
+                ]
+            },
+            {
+                level: 4,
+                name: "豆類專家",
+                description: "學習各種豆類和根莖類",
+                items: [
+                    { id: 25, name: '檸檬', emoji: '🍋', category: 'fruit' },
+                    { id: 26, name: '桃子', emoji: '🍑', category: 'fruit' },
+                    { id: 27, name: '梨子', emoji: '🍐', category: 'fruit' },
+                    { id: 28, name: '藍莓', emoji: '🫐', category: 'fruit' },
+                    { id: 29, name: '豌豆', emoji: '🟢', category: 'vegetable' },
+                    { id: 30, name: '蘿蔔', emoji: '🥕', category: 'vegetable' },
+                    { id: 31, name: '芹菜', emoji: '🥬', category: 'vegetable' },
+                    { id: 32, name: '菠菜', emoji: '🥬', category: 'vegetable' },
+                    { id: 33, name: '韭菜', emoji: '🥬', category: 'vegetable' },
+                    { id: 34, name: '白菜', emoji: '🥬', category: 'vegetable' },
+                    { id: 35, name: '高麗菜', emoji: '🥬', category: 'vegetable' },
+                    { id: 36, name: '南瓜', emoji: '🎃', category: 'vegetable' }
+                ]
+            },
+            {
+                level: 5,
+                name: "終極挑戰",
+                description: "最困難的分類挑戰！",
+                items: [
+                    { id: 37, name: '柿子', emoji: '🍅', category: 'fruit' },
+                    { id: 38, name: '石榴', emoji: '🍎', category: 'fruit' },
+                    { id: 39, name: '無花果', emoji: '🍇', category: 'fruit' },
+                    { id: 40, name: '龍眼', emoji: '🍇', category: 'fruit' },
+                    { id: 41, name: '荔枝', emoji: '🍇', category: 'fruit' },
+                    { id: 42, name: '楊桃', emoji: '⭐', category: 'fruit' },
+                    { id: 43, name: '蓮藕', emoji: '⚪', category: 'vegetable' },
+                    { id: 44, name: '竹筍', emoji: '🎋', category: 'vegetable' },
+                    { id: 45, name: '苦瓜', emoji: '🥒', category: 'vegetable' },
+                    { id: 46, name: '絲瓜', emoji: '🥒', category: 'vegetable' },
+                    { id: 47, name: '冬瓜', emoji: '🥒', category: 'vegetable' },
+                    { id: 48, name: '秋葵', emoji: '🌶️', category: 'vegetable' },
+                    { id: 49, name: '山藥', emoji: '🥔', category: 'vegetable' },
+                    { id: 50, name: '地瓜', emoji: '🍠', category: 'vegetable' }
+                ]
+            }
+        ];
+
+        // 遊戲狀態
+        let currentLevel = 1;
+        let score = 0;
+        let completed = 0;
+        let totalItems = 0;
+        let draggedItem = null;
+        let mistakes = 0;
+
+        // 初始化遊戲
+        function initGame() {
+            currentLevel = 1;
+            score = 0;
+            startLevel(currentLevel);
+        }
+
+        // 開始關卡
+        function startLevel(levelNum) {
+            const level = levels[levelNum - 1];
+            if (!level) {
+                showGameComplete();
+                return;
+            }
+
+            completed = 0;
+            mistakes = 0;
+            totalItems = level.items.length;
+            
+            // 更新UI
+            document.getElementById('current-level').textContent = levelNum;
+            document.getElementById('level-description').textContent = `${level.name}: ${level.description}`;
+            document.getElementById('total').textContent = totalItems;
+            updateScore();
+            updateProgress();
+            
+            // 清空籃子
+            document.getElementById('fruit-basket').innerHTML = '';
+            document.getElementById('vegetable-basket').innerHTML = '';
+            
+            // 打亂物品順序
+            const shuffledItems = [...level.items].sort(() => Math.random() - 0.5);
+            
+            // 生成物品
+            const container = document.getElementById('items-container');
+            container.innerHTML = '';
+            
+            shuffledItems.forEach(item => {
+                const itemElement = createItemElement(item);
+                container.appendChild(itemElement);
+            });
+        }
+
+        // 創建物品元素
+        function createItemElement(item) {
+            const div = document.createElement('div');
+            div.className = 'drag-item bg-white rounded-xl p-3 shadow-lg border-2 border-gray-200 text-center hover:shadow-xl';
+            div.draggable = true;
+            div.dataset.id = item.id;
+            div.dataset.category = item.category;
+            
+            div.innerHTML = `
+                <div class="text-3xl mb-1">${item.emoji}</div>
+                <div class="text-xs font-semibold text-gray-700">${item.name}</div>
+            `;
+            
+            // 桌面拖拽事件
+            div.addEventListener('dragstart', handleDragStart);
+            div.addEventListener('dragend', handleDragEnd);
+            
+            // 手機觸控事件
+            div.addEventListener('touchstart', handleTouchStart, { passive: false });
+            div.addEventListener('touchmove', handleTouchMove, { passive: false });
+            div.addEventListener('touchend', handleTouchEnd, { passive: false });
+            
+            return div;
+        }
+
+        // 觸控拖拽變數
+        let touchItem = null;
+        let touchOffset = { x: 0, y: 0 };
+        let ghostElement = null;
+
+        // 觸控開始
+        function handleTouchStart(e) {
+            e.preventDefault();
+            touchItem = this;
+            
+            const touch = e.touches[0];
+            const rect = this.getBoundingClientRect();
+            touchOffset.x = touch.clientX - rect.left;
+            touchOffset.y = touch.clientY - rect.top;
+            
+            // 創建拖拽幽靈元素
+            ghostElement = this.cloneNode(true);
+            ghostElement.style.position = 'fixed';
+            ghostElement.style.pointerEvents = 'none';
+            ghostElement.style.zIndex = '1000';
+            ghostElement.style.opacity = '0.8';
+            ghostElement.style.transform = 'rotate(5deg) scale(1.1)';
+            document.body.appendChild(ghostElement);
+            
+            this.classList.add('dragging');
+            updateGhostPosition(touch.clientX, touch.clientY);
+        }
+
+        // 觸控移動
+        function handleTouchMove(e) {
+            if (!touchItem) return;
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            updateGhostPosition(touch.clientX, touch.clientY);
+            
+            // 檢查是否在放置區域上方
+            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            const dropZone = elementBelow?.closest('.drop-zone');
+            
+            // 移除所有拖拽懸停效果
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('drag-over');
+            });
+            
+            // 添加當前懸停效果
+            if (dropZone) {
+                dropZone.classList.add('drag-over');
+            }
+        }
+
+        // 觸控結束
+        function handleTouchEnd(e) {
+            if (!touchItem) return;
+            e.preventDefault();
+            
+            const touch = e.changedTouches[0];
+            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            const dropZone = elementBelow?.closest('.drop-zone');
+            
+            // 清理
+            if (ghostElement) {
+                document.body.removeChild(ghostElement);
+                ghostElement = null;
+            }
+            
+            touchItem.classList.remove('dragging');
+            
+            // 移除所有拖拽懸停效果
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('drag-over');
+            });
+            
+            // 處理放置
+            if (dropZone) {
+                const dropCategory = dropZone.dataset.category;
+                const itemCategory = touchItem.dataset.category;
+                
+                if (dropCategory === itemCategory) {
+                    handleCorrectDrop(touchItem, dropZone);
+                } else {
+                    handleWrongDrop(touchItem);
+                }
+            }
+            
+            touchItem = null;
+        }
+
+        // 更新幽靈元素位置
+        function updateGhostPosition(x, y) {
+            if (ghostElement) {
+                ghostElement.style.left = (x - touchOffset.x) + 'px';
+                ghostElement.style.top = (y - touchOffset.y) + 'px';
+            }
+        }
+
+        // 拖拽開始
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        // 拖拽結束
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            draggedItem = null;
+        }
+
+        // 設置放置區域事件
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.addEventListener('dragover', handleDragOver);
+            zone.addEventListener('dragenter', handleDragEnter);
+            zone.addEventListener('dragleave', handleDragLeave);
+            zone.addEventListener('drop', handleDrop);
+        });
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            if (!draggedItem) return;
+            
+            const dropCategory = this.dataset.category;
+            const itemCategory = draggedItem.dataset.category;
+            
+            if (dropCategory === itemCategory) {
+                handleCorrectDrop(draggedItem, this);
+            } else {
+                handleWrongDrop(draggedItem);
+            }
+        }
+
+        // 正確分類處理
+        function handleCorrectDrop(item, dropZone) {
+            const basket = dropZone.querySelector('[id$="-basket"]');
+            
+            // 創建小版本的物品
+            const smallItem = item.cloneNode(true);
+            smallItem.className = 'bg-white rounded-lg p-1 shadow-md text-center transform scale-75';
+            smallItem.draggable = false;
+            
+            // 添加到籃子
+            basket.appendChild(smallItem);
+            
+            // 從原位置移除
+            item.remove();
+            
+            // 更新分數
+            const baseScore = 10;
+            const bonusScore = Math.max(0, 5 - mistakes); // 錯誤越少獎勵越多
+            score += baseScore + bonusScore;
+            completed += 1;
+            
+            updateScore();
+            updateProgress();
+            
+            // 動畫效果
+            dropZone.classList.add('correct-drop');
+            setTimeout(() => dropZone.classList.remove('correct-drop'), 600);
+            
+            // 檢查關卡是否完成
+            if (completed === totalItems) {
+                setTimeout(() => showLevelComplete(), 500);
+            }
+        }
+
+        // 錯誤分類處理
+        function handleWrongDrop(item) {
+            mistakes++;
+            item.classList.add('wrong-drop');
+            setTimeout(() => item.classList.remove('wrong-drop'), 500);
+        }
+
+        // 更新分數
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('completed').textContent = completed;
+        }
+
+        // 更新進度條
+        function updateProgress() {
+            const progress = (completed / totalItems) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+        }
+
+        // 顯示關卡完成
+        function showLevelComplete() {
+            const stars = calculateStars();
+            const message = getCompletionMessage(stars);
+            
+            document.getElementById('level-complete-message').textContent = message;
+            
+            // 顯示星星
+            const starsContainer = document.getElementById('stars-display');
+            starsContainer.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const star = document.createElement('span');
+                star.className = i < stars ? 'text-4xl text-yellow-400 star' : 'text-4xl text-gray-300';
+                star.textContent = '⭐';
+                starsContainer.appendChild(star);
+            }
+            
+            document.getElementById('level-complete').classList.remove('hidden');
+        }
+
+        // 計算星星數量
+        function calculateStars() {
+            if (mistakes === 0) return 3;
+            if (mistakes <= 2) return 2;
+            return 1;
+        }
+
+        // 獲取完成訊息
+        function getCompletionMessage(stars) {
+            const messages = [
+                "繼續努力！",
+                "做得不錯！",
+                "太棒了！完美分類！"
+            ];
+            return messages[stars - 1];
+        }
+
+        // 顯示遊戲完成
+        function showGameComplete() {
+            document.getElementById('game-complete').classList.remove('hidden');
+        }
+
+        // 提示功能
+        function showHint() {
+            const items = document.querySelectorAll('.drag-item');
+            if (items.length === 0) return;
+            
+            const randomItem = items[Math.floor(Math.random() * items.length)];
+            const category = randomItem.dataset.category;
+            const categoryName = category === 'fruit' ? '水果' : '蔬菜';
+            
+            randomItem.style.border = '3px solid #f59e0b';
+            randomItem.style.boxShadow = '0 0 20px #f59e0b';
+            
+            alert(`提示：${randomItem.querySelector('.text-xs').textContent} 是 ${categoryName}！`);
+            
+            setTimeout(() => {
+                randomItem.style.border = '2px solid #e5e7eb';
+                randomItem.style.boxShadow = '';
+            }, 3000);
+        }
+
+        // 事件監聽器
+        document.getElementById('hint-btn').addEventListener('click', showHint);
+        document.getElementById('restart-level-btn').addEventListener('click', () => startLevel(currentLevel));
+        document.getElementById('next-level-btn').addEventListener('click', () => {
+            document.getElementById('level-complete').classList.add('hidden');
+            currentLevel++;
+            startLevel(currentLevel);
+        });
+        document.getElementById('replay-level-btn').addEventListener('click', () => {
+            document.getElementById('level-complete').classList.add('hidden');
+            startLevel(currentLevel);
+        });
+        document.getElementById('restart-game-btn').addEventListener('click', () => {
+            document.getElementById('game-complete').classList.add('hidden');
+            initGame();
+        });
+
+        // PWA 安裝提示
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallPrompt();
+        });
+
+        function showInstallPrompt() {
+            const installBanner = document.createElement('div');
+            installBanner.id = 'install-banner';
+            installBanner.className = 'fixed top-0 left-0 right-0 bg-orange-500 text-white p-3 text-center z-50';
+            installBanner.innerHTML = `
+                <div class="flex items-center justify-between max-w-md mx-auto">
+                    <span class="text-sm">📱 安裝到手機桌面</span>
+                    <div>
+                        <button id="install-btn" class="bg-white text-orange-500 px-3 py-1 rounded text-sm font-bold mr-2">安裝</button>
+                        <button id="dismiss-btn" class="text-white text-sm">✕</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(installBanner);
+            
+            document.getElementById('install-btn').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    installBanner.remove();
+                }
+            });
+            
+            document.getElementById('dismiss-btn').addEventListener('click', () => {
+                installBanner.remove();
+            });
+        }
+
+        // Service Worker 註冊
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    const CACHE_NAME = 'fruit-veggie-game-v1';
+                    const urlsToCache = [
+                        './',
+                        'https://cdn.tailwindcss.com'
+                    ];
+
+                    self.addEventListener('install', (event) => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then((cache) => cache.addAll(urlsToCache))
+                        );
+                    });
+
+                    self.addEventListener('fetch', (event) => {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then((response) => {
+                                    return response || fetch(event.request);
+                                })
+                        );
+                    });
+                `;
+                
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl)
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // 初始化遊戲
+        initGame();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9728d5ce967f49fd',t:'MTc1NTc2NTcyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
